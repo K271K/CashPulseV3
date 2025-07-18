@@ -4,44 +4,29 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import com.example.cashpulse.navigation.DefaultNavigator
+import com.example.cashpulse.navigation.MainNavigation
 import com.example.cashpulse.ui.theme.CashPulseTheme
+import javax.inject.Inject
 
 class MainActivity : ComponentActivity() {
+    @Inject
+    lateinit var defaultNavigator: DefaultNavigator
+
+    @Inject
+    lateinit var mainActivityViewModelFactory: MainActivityViewModelFactory
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        (applicationContext as BaseApplication).appComponent.inject(this)
         enableEdgeToEdge()
         setContent {
             CashPulseTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                MainNavigation(
+                    defaultNavigator = defaultNavigator,
+                    mainActivityViewModelFactory = mainActivityViewModelFactory
+                )
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    CashPulseTheme {
-        Greeting("Android")
     }
 }

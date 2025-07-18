@@ -1,3 +1,5 @@
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 pluginManagement {
     repositories {
         google {
@@ -26,3 +28,4 @@ include(":core:domain")
 include(":core:data")
 include(":feature:expenses:presentation")
 include(":feature:expenses:domain")
+include(":core:navigation")
