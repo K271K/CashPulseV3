@@ -1,13 +1,18 @@
 package core.data.remote.retrofit
 
 import core.data.BuildConfig
+import core.domain.model.account.AccountDomainModel
+import core.domain.model.category.CategoryDomainModel
+import core.domain.model.transaction.CreateTransactionDomainModel
 import core.domain.model.transaction.TransactionDomainModel
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 import javax.inject.Inject
@@ -21,6 +26,24 @@ internal interface NetworkApi {
         @Query("startDate") startDate: String?,
         @Query("endDate") endDate: String?,
     ): List<TransactionDomainModel>
+
+    @GET("categories")
+    suspend fun getAllCategories(): List<CategoryDomainModel>
+
+    @GET("categories/type/{isIncome}")
+    suspend fun getCategoriesByType(
+        @Path("isIncome") isIncome: Boolean
+    ): List<CategoryDomainModel>
+
+    @GET("accounts/{id}")
+    suspend fun getAccountById(
+        @Path("id") accountId: Int
+    ): AccountDomainModel
+
+    @POST("transactions")
+    suspend fun createTransaction(
+        @Body transaction: CreateTransactionDomainModel
+    )
 
 }
 
@@ -60,6 +83,19 @@ internal class RetrofitNetwork @Inject constructor() : RemoteDataSource {
             startDate,
             endDate
         )
+
+    override suspend fun getAllCategories(): List<CategoryDomainModel> =
+        networkApi.getAllCategories()
+
+
+    override suspend fun getCategoriesByType(isIncome: Boolean): List<CategoryDomainModel> =
+        networkApi.getCategoriesByType(isIncome = isIncome)
+
+    override suspend fun getAccountById(accountId: Int): AccountDomainModel =
+        networkApi.getAccountById(accountId = accountId)
+
+    override suspend fun createTransaction(transaction: CreateTransactionDomainModel) =
+        networkApi.createTransaction(transaction = transaction)
 
 
 }

@@ -1,5 +1,8 @@
 package core.domain.model.transaction
 
+import core.domain.model.account.AccountDomainModel
+import core.domain.model.category.CategoryDomainModel
+
 data class TransactionDomainModel(
     val account: AccountDomainModel,
     val amount: String,

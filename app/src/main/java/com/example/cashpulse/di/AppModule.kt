@@ -7,7 +7,11 @@ import com.example.cashpulse.MainActivityViewModelFactory
 import com.example.cashpulse.navigation.DefaultNavigator
 import core.data.di.CoreDataModule
 import core.data.remote.retrofit.RemoteDataSource
+import core.data.repository.AccountRepositoryImpl
+import core.data.repository.CategoriesRepositoryImpl
 import core.data.repository.TransactionsRepositoryImpl
+import core.domain.repository.AccountRepository
+import core.domain.repository.CategoriesRepository
 import core.domain.repository.TransactionRepository
 import dagger.Module
 import dagger.Provides
@@ -42,8 +46,24 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideTransactionRepositoryImpl(remoteDataSource: RemoteDataSource) : TransactionRepository {
+    fun provideTransactionRepository(remoteDataSource: RemoteDataSource) : TransactionRepository {
         return TransactionsRepositoryImpl(
+            remoteDataSource = remoteDataSource
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideCategoriesRepository(remoteDataSource: RemoteDataSource) : CategoriesRepository {
+        return CategoriesRepositoryImpl(
+            remoteDataSource = remoteDataSource
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideAccountRepository(remoteDataSource: RemoteDataSource) : AccountRepository {
+        return AccountRepositoryImpl(
             remoteDataSource = remoteDataSource
         )
     }

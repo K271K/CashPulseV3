@@ -1,4 +1,4 @@
-package core.domain.model.transaction
+package core.domain.model.category
 
 data class CategoryDomainModel(
     val emoji: String,
@@ -6,3 +6,4 @@ data class CategoryDomainModel(
     val isIncome: Boolean,
     val name: String
 )
+

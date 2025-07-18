@@ -4,6 +4,8 @@ import dagger.Module
 import dagger.Provides
 import feature.expenses.presentation.navigation.FeatureExpensesNavigation
 import feature.expenses.presentation.navigation.FeatureExpensesNavigationImpl
+import feature.expenses.presentation.screens.expenses_add.ExpensesAddScreenViewModel
+import feature.expenses.presentation.screens.expenses_add.ExpensesAddScreenViewModelFactory
 import feature.expenses.presentation.screens.expenses_history.ExpensesHistoryScreenViewModel
 import feature.expenses.presentation.screens.expenses_history.ExpensesHistoryScreenViewModelFactory
 import feature.expenses.presentation.screens.expenses_today.ExpensesTodayScreenViewModel
@@ -18,11 +20,13 @@ object ExpensesModule {
     @Singleton
     fun provideFeatureExpensesNavigation(
         expensesTodayScreenViewModelFactory: ExpensesTodayScreenViewModelFactory,
-        expensesHistoryScreenViewModelFactory: ExpensesHistoryScreenViewModelFactory
+        expensesHistoryScreenViewModelFactory: ExpensesHistoryScreenViewModelFactory,
+        expensesAddScreenViewModelFactory: ExpensesAddScreenViewModelFactory
     ): FeatureExpensesNavigation {
         return FeatureExpensesNavigationImpl(
             expensesTodayScreenViewModelFactory = expensesTodayScreenViewModelFactory,
-            expensesHistoryScreenViewModelFactory = expensesHistoryScreenViewModelFactory
+            expensesHistoryScreenViewModelFactory = expensesHistoryScreenViewModelFactory,
+            expensesAddScreenViewModelFactory = expensesAddScreenViewModelFactory
         )
     }
 
@@ -43,6 +47,16 @@ object ExpensesModule {
     ): ExpensesHistoryScreenViewModelFactory {
         return ExpensesHistoryScreenViewModelFactory(
             expensesHistoryScreenViewModelProvider = expensesHistoryScreenViewModelProvider
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideExpensesAddScreenViewModelFactory(
+        expensesAddScreenViewModelProvider: Provider<ExpensesAddScreenViewModel>
+    ): ExpensesAddScreenViewModelFactory {
+        return ExpensesAddScreenViewModelFactory(
+            expensesAddScreenViewModelProvider = expensesAddScreenViewModelProvider
         )
     }
 

@@ -30,7 +30,7 @@ class ExpensesHistoryScreenViewModel @Inject constructor(
             val formattedFirstDayOfMonth = firstDayOfMonth.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
             val todayDate = formatDateFromLongToHuman(System.currentTimeMillis())
             getPeriodExpensesUseCase(
-                startDate = null,
+                startDate = formattedFirstDayOfMonth,
                 endDate = todayDate
             )
                 .onSuccess { expensesList->
@@ -38,7 +38,9 @@ class ExpensesHistoryScreenViewModel @Inject constructor(
                         it.copy(
                             isLoading = false,
                             expensesList = expensesList.toExpenseUiModelList(),
-                            currency = formatCurrencyFromTextToSymbol(expensesList.first().account.currency),
+                            currency = if (expensesList.isNotEmpty()) formatCurrencyFromTextToSymbol(
+                                expensesList.first().account.currency
+                            ) else "",
                             endDate = todayDate,
                             startDate = formattedFirstDayOfMonth,
                             totalAmount = expensesList.sumOf { expense ->
@@ -60,15 +62,78 @@ class ExpensesHistoryScreenViewModel @Inject constructor(
 
     fun updateStartDate(dateInMillis: Long) {
         val formattedDate = formatDateFromLongToHuman(date = dateInMillis)
+        println(formattedDate)
         _uiState.update {
-            it.copy(startDate = formattedDate)
+            it.copy(
+                isLoading = true,
+                startDate = formattedDate
+            )
+        }
+        viewModelScope.launch {
+            getPeriodExpensesUseCase(
+                startDate = formattedDate,
+                endDate = _uiState.value.endDate
+            )
+                .onSuccess { expensesList->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            expensesList = expensesList.toExpenseUiModelList(),
+                            currency = if (expensesList.isNotEmpty()) formatCurrencyFromTextToSymbol(
+                                expensesList.first().account.currency
+                            ) else it.currency,
+                            totalAmount = expensesList.sumOf { expense ->
+                                expense.amount.toDouble()
+                            }.toString()
+                        )
+                    }
+                }
+                .onFailure { error->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = error.message
+                        )
+                    }
+                }
         }
     }
 
     fun updateEndDate(dateInMillis: Long) {
         val formattedDate = formatDateFromLongToHuman(date = dateInMillis)
         _uiState.update {
-            it.copy(endDate = formattedDate)
+            it.copy(
+                isLoading = true,
+                endDate = formattedDate
+            )
+        }
+        viewModelScope.launch {
+            getPeriodExpensesUseCase(
+                startDate = _uiState.value.startDate,
+                endDate = formattedDate
+            )
+                .onSuccess { expensesList->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            expensesList = expensesList.toExpenseUiModelList(),
+                            currency = if (expensesList.isNotEmpty()) formatCurrencyFromTextToSymbol(
+                                expensesList.first().account.currency
+                            ) else it.currency,
+                            totalAmount = expensesList.sumOf { expense ->
+                                expense.amount.toDouble()
+                            }.toString()
+                        )
+                    }
+                }
+                .onFailure { error->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = error.message
+                        )
+                    }
+                }
         }
     }
 }

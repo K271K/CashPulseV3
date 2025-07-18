@@ -1,8 +1,7 @@
 package core.data.repository
 
 import core.data.remote.retrofit.RemoteDataSource
-import core.domain.model.transaction.AccountDomainModel
-import core.domain.model.transaction.CategoryDomainModel
+import core.domain.model.transaction.CreateTransactionDomainModel
 import core.domain.model.transaction.TransactionDomainModel
 import core.domain.repository.TransactionRepository
 import kotlinx.coroutines.Dispatchers
@@ -23,5 +22,12 @@ class TransactionsRepositoryImpl @Inject constructor(
             endDate = endDate,
         )
         return@withContext remoteData
+    }
+
+    override suspend fun createTransaction(transaction: CreateTransactionDomainModel) {
+        val result = remoteDataSource.createTransaction(
+            transaction = transaction
+        )
+        println(result)
     }
 }

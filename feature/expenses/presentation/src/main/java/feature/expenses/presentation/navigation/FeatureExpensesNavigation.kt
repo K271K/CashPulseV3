@@ -7,6 +7,8 @@ import androidx.navigation.navigation
 import core.navigation.Dest
 import core.navigation.Feature
 import core.navigation.SubGraphDest
+import feature.expenses.presentation.screens.expenses_add.ExpensesAddScreen
+import feature.expenses.presentation.screens.expenses_add.ExpensesAddScreenViewModelFactory
 import feature.expenses.presentation.screens.expenses_history.ExpensesHistoryScreen
 import feature.expenses.presentation.screens.expenses_history.ExpensesHistoryScreenViewModelFactory
 import feature.expenses.presentation.screens.expenses_today.ExpensesTodayScreen
@@ -18,6 +20,7 @@ interface FeatureExpensesNavigation : Feature
 internal class FeatureExpensesNavigationImpl @Inject constructor(
     private val expensesTodayScreenViewModelFactory: ExpensesTodayScreenViewModelFactory,
     private val expensesHistoryScreenViewModelFactory: ExpensesHistoryScreenViewModelFactory,
+    private val expensesAddScreenViewModelFactory: ExpensesAddScreenViewModelFactory
 ) : FeatureExpensesNavigation {
     override fun registerGraph(
         navHostController: NavHostController,
@@ -36,7 +39,12 @@ internal class FeatureExpensesNavigationImpl @Inject constructor(
                         }
                     },
                     goToAddTransactionScreen = {
-
+                        navHostController.navigate(Dest.ExpensesAdd) {
+                            launchSingleTop = true
+                            popUpTo(Dest.ExpensesToday) {
+                                inclusive = true
+                            }
+                        }
                     }
                 )
             }
@@ -47,6 +55,19 @@ internal class FeatureExpensesNavigationImpl @Inject constructor(
                         navHostController.navigate(Dest.ExpensesToday) {
                             launchSingleTop = true
                             popUpTo(Dest.ExpensesHistory) {
+                                inclusive = true
+                            }
+                        }
+                    }
+                )
+            }
+            composable<Dest.ExpensesAdd> {
+                ExpensesAddScreen(
+                    expensesAddScreenViewModelFactory = expensesAddScreenViewModelFactory,
+                    goBack = {
+                        navHostController.navigate(Dest.ExpensesToday) {
+                            launchSingleTop = true
+                            popUpTo(Dest.ExpensesAdd) {
                                 inclusive = true
                             }
                         }

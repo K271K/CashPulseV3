@@ -66,3 +66,13 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
+
+tasks.register("cleanKsp") {
+    doLast {
+        delete("${layout.buildDirectory.get()}/kspCaches")
+    }
+}
+
+tasks.named("clean").configure {
+    dependsOn("cleanKsp")
+}

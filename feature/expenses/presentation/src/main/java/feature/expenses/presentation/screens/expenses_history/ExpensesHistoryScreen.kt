@@ -32,6 +32,7 @@ import core.ui.components.MyListItemOnlyText
 import core.ui.components.MyListItemWithLeadIcon
 import core.ui.components.MyLoadingIndicator
 import core.ui.components.MyPickerRow
+import core.ui.components.MyTextBox
 import core.ui.components.MyTopAppBar
 import kotlin.math.exp
 
@@ -53,6 +54,12 @@ fun ExpensesHistoryScreen(
     ExpensesHistoryScreenContent(
         uiState = uiState,
         goBack = goBack,
+        onChooseStartDate = {
+            expensesHistoryScreenViewModel.updateStartDate(it)
+        },
+        onChooseEndDate = {
+            expensesHistoryScreenViewModel.updateEndDate(it)
+        }
     )
 }
 
@@ -61,6 +68,8 @@ fun ExpensesHistoryScreen(
 private fun ExpensesHistoryScreenContent(
     uiState: ExpensesHistoryScreenState,
     goBack: () -> Unit,
+    onChooseStartDate: (Long) -> Unit,
+    onChooseEndDate: (Long) -> Unit,
 ) {
     var showStartDatePickerDialog by remember { mutableStateOf(false) }
     var showEndDatePickerDialog by remember { mutableStateOf(false) }
@@ -124,7 +133,7 @@ private fun ExpensesHistoryScreenContent(
                     },
                 )
                 if (uiState.expensesList.isEmpty()){
-                    MyErrorBox(
+                    MyTextBox(
                         message = "Нет расходов за выбранный период\nПопробуйте выбрать другой период"
                     )
                 } else {
@@ -179,6 +188,7 @@ private fun ExpensesHistoryScreenContent(
                     datePickerState = startDatePickerState,
                     onDismiss = { showStartDatePickerDialog = false },
                     onConfirm = { selectedDate ->
+                        onChooseStartDate(selectedDate)
                         showStartDatePickerDialog = false
                     }
                 )
@@ -187,6 +197,7 @@ private fun ExpensesHistoryScreenContent(
                     datePickerState = endDatePickerState,
                     onDismiss = { showEndDatePickerDialog = false },
                     onConfirm = { selectedDate ->
+                        onChooseEndDate(selectedDate)
                         showEndDatePickerDialog = false
                     }
                 )
