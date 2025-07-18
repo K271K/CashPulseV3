@@ -10,8 +10,8 @@ class GetTodayExpensesUseCase @Inject constructor(
     suspend operator fun invoke() : Result<List<TransactionDomainModel>> {
         return try {
             val domainTransactionList = transactionRepository.getAccountTransactionsByPeriod(
-                startDate = "2023-01-01",
-                endDate = "2023-01-31"
+                startDate = "2025-07-18",
+                endDate = "2025-07-18"
             )
             val filteredList = domainTransactionList.filter { !it.category.isIncome }
             Result.success(filteredList)

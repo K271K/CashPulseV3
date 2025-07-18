@@ -35,13 +35,15 @@ fun ExpensesTodayScreen(
     )
     val uiState by expensesTodayScreenViewModel.uiState.collectAsStateWithLifecycle()
     ExpensesTodayScreenContent(
-        uiState = uiState
+        uiState = uiState,
+        goToHistoryScreen = goToHistoryScreen
     )
 }
 
 @Composable
 private fun ExpensesTodayScreenContent(
-    uiState: ExpensesTodayScreenState
+    uiState: ExpensesTodayScreenState,
+    goToHistoryScreen: ()-> Unit,
 ) {
     Box(
         modifier = Modifier
@@ -55,7 +57,7 @@ private fun ExpensesTodayScreenContent(
                 text = "Расходы сегодня",
                 trailingIcon = R.drawable.history,
                 onTrailingIconClick = {
-
+                    goToHistoryScreen()
                 }
             )
             when {

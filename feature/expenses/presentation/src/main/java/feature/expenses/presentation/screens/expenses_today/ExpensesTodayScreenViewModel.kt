@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import feature.expenses.domain.usecase.GetTodayExpensesUseCase
-import feature.expenses.presentation.model.toExpenseTodayUiModelList
+import feature.expenses.presentation.model.toExpenseUiModelList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,12 +28,17 @@ class ExpensesTodayScreenViewModel @Inject constructor(
                         it.copy(
                             isLoading = false,
                             error = null,
-                            expensesList = expensesList.toExpenseTodayUiModelList(),
+                            expensesList = expensesList.toExpenseUiModelList(),
                         )
                     }
                 }
-                .onFailure {
-                    println(it)
+                .onFailure { error->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = error.message
+                        )
+                    }
                 }
         }
     }

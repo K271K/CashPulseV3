@@ -32,11 +32,20 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    buildFeatures {
+        buildConfig = true
+    }
+}
+
+secrets {
+    defaultPropertiesFileName = "secrets.defaults.properties"
 }
 
 dependencies {
 
     api(projects.core.domain)
+
+    implementation(libs.bundles.network)
 
     implementation(libs.dagger.dagger)
     ksp(libs.dagger.compiler)

@@ -6,7 +6,7 @@ import core.domain.utils.DomainConstants.ACCOUNT_ID
 interface TransactionRepository {
     suspend fun getAccountTransactionsByPeriod(
         accountId: Int = ACCOUNT_ID,
-        startDate: String,
-        endDate: String
+        startDate: String?,
+        endDate: String?
     ) : List<TransactionDomainModel>
 }
