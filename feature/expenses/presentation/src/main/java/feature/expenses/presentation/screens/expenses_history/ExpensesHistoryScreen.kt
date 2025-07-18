@@ -40,6 +40,7 @@ import kotlin.math.exp
 fun ExpensesHistoryScreen(
     expensesHistoryScreenViewModelFactory: ExpensesHistoryScreenViewModelFactory,
     goBack: () -> Unit,
+    goToEditExpenseScreen: (Int) -> Unit
 ) {
 
     val expensesHistoryScreenViewModel: ExpensesHistoryScreenViewModel = viewModel(
@@ -54,12 +55,9 @@ fun ExpensesHistoryScreen(
     ExpensesHistoryScreenContent(
         uiState = uiState,
         goBack = goBack,
-        onChooseStartDate = {
-            expensesHistoryScreenViewModel.updateStartDate(it)
-        },
-        onChooseEndDate = {
-            expensesHistoryScreenViewModel.updateEndDate(it)
-        }
+        onChooseStartDate = remember { expensesHistoryScreenViewModel::updateStartDate },
+        onChooseEndDate = remember { expensesHistoryScreenViewModel::updateEndDate },
+        goToEditExpenseScreen = goToEditExpenseScreen
     )
 }
 
@@ -70,6 +68,7 @@ private fun ExpensesHistoryScreenContent(
     goBack: () -> Unit,
     onChooseStartDate: (Long) -> Unit,
     onChooseEndDate: (Long) -> Unit,
+    goToEditExpenseScreen: (Int) -> Unit
 ) {
     var showStartDatePickerDialog by remember { mutableStateOf(false) }
     var showEndDatePickerDialog by remember { mutableStateOf(false) }
@@ -94,6 +93,7 @@ private fun ExpensesHistoryScreenContent(
             uiState.isLoading -> {
                 MyLoadingIndicator()
             }
+
             uiState.error != null -> {
                 MyErrorBox(
                     message = uiState.error,
@@ -102,6 +102,7 @@ private fun ExpensesHistoryScreenContent(
                     },
                 )
             }
+
             else -> {
                 MyPickerRow(
                     leadingText = "Начало",
@@ -132,7 +133,7 @@ private fun ExpensesHistoryScreenContent(
                         Text("${uiState.totalAmount} ${uiState.currency}")
                     },
                 )
-                if (uiState.expensesList.isEmpty()){
+                if (uiState.expensesList.isEmpty()) {
                     MyTextBox(
                         message = "Нет расходов за выбранный период\nПопробуйте выбрать другой период"
                     )
@@ -143,8 +144,10 @@ private fun ExpensesHistoryScreenContent(
                     ) {
                         items(
                             items = uiState.expensesList,
-                            key = {it.id}
-                        ) { expense->
+                            key = { it.id }
+                        ) { expense ->
+                            val onEditClick =
+                                remember(expense.id) { { goToEditExpenseScreen(expense.id) } }
                             MyListItemWithLeadIcon(
                                 modifier = Modifier
                                     .height(70.dp),
@@ -175,9 +178,7 @@ private fun ExpensesHistoryScreenContent(
                                         contentDescription = null,
                                     )
                                 },
-                                onClick = {
-
-                                }
+                                onClick = onEditClick
                             )
                             HorizontalDivider()
                         }
@@ -186,19 +187,23 @@ private fun ExpensesHistoryScreenContent(
                 DatePickerDialogComponent(
                     showDialog = showStartDatePickerDialog,
                     datePickerState = startDatePickerState,
-                    onDismiss = { showStartDatePickerDialog = false },
-                    onConfirm = { selectedDate ->
-                        onChooseStartDate(selectedDate)
-                        showStartDatePickerDialog = false
+                    onDismiss = remember { { showStartDatePickerDialog = false } },
+                    onConfirm = remember {
+                        { selectedDate ->
+                            onChooseStartDate(selectedDate)
+                            showStartDatePickerDialog = false
+                        }
                     }
                 )
                 DatePickerDialogComponent(
                     showDialog = showEndDatePickerDialog,
                     datePickerState = endDatePickerState,
-                    onDismiss = { showEndDatePickerDialog = false },
-                    onConfirm = { selectedDate ->
-                        onChooseEndDate(selectedDate)
-                        showEndDatePickerDialog = false
+                    onDismiss = remember { { showEndDatePickerDialog = false } },
+                    onConfirm = remember {
+                        { selectedDate ->
+                            onChooseEndDate(selectedDate)
+                            showEndDatePickerDialog = false
+                        }
                     }
                 )
             }

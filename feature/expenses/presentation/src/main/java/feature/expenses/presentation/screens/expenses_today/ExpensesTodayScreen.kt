@@ -1,5 +1,6 @@
 package feature.expenses.presentation.screens.expenses_today
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -22,6 +24,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import core.ui.R
 import core.ui.components.MyErrorBox
 import core.ui.components.MyFloatingActionButton
+import core.ui.components.MyListItemOnlyText
 import core.ui.components.MyListItemWithLeadIcon
 import core.ui.components.MyLoadingIndicator
 import core.ui.components.MyTextBox
@@ -31,7 +34,8 @@ import core.ui.components.MyTopAppBar
 fun ExpensesTodayScreen(
     expensesTodayScreenViewModelFactory: ExpensesTodayScreenViewModelFactory,
     goToHistoryScreen: ()-> Unit,
-    goToAddTransactionScreen: () -> Unit
+    goToAddExpenseScreen: () -> Unit,
+    goToEditExpenseScreen: (Int) -> Unit
 ) {
     val expensesTodayScreenViewModel: ExpensesTodayScreenViewModel = viewModel(
         factory = expensesTodayScreenViewModelFactory
@@ -40,7 +44,8 @@ fun ExpensesTodayScreen(
     ExpensesTodayScreenContent(
         uiState = uiState,
         goToHistoryScreen = goToHistoryScreen,
-        goToAddTransactionScreen = goToAddTransactionScreen
+        goToAddTransactionScreen = goToAddExpenseScreen,
+        goToEditExpenseScreen = goToEditExpenseScreen
     )
 }
 
@@ -48,7 +53,8 @@ fun ExpensesTodayScreen(
 private fun ExpensesTodayScreenContent(
     uiState: ExpensesTodayScreenState,
     goToHistoryScreen: ()-> Unit,
-    goToAddTransactionScreen: () -> Unit
+    goToAddTransactionScreen: () -> Unit,
+    goToEditExpenseScreen: (Int) -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -78,6 +84,20 @@ private fun ExpensesTodayScreenContent(
                     )
                 }
                 else -> {
+                    MyListItemOnlyText(
+                        modifier = Modifier
+                            .height(56.dp)
+                            .background(MaterialTheme.colorScheme.secondary),
+                        content = {
+                            Text(
+                                text = "Сумма"
+                            )
+                        },
+                        trailContent = {
+                            Text("${uiState.totalAmount} ${uiState.currency}")
+                        },
+                    )
+                    HorizontalDivider()
                     if (uiState.expensesList.isEmpty()) {
                         MyTextBox(
                             message = "Нет расходов за сегодня",
@@ -91,6 +111,8 @@ private fun ExpensesTodayScreenContent(
                                 items = uiState.expensesList,
                                 key = {it.id}
                             ) { expense ->
+                                val onEditClick =
+                                    remember(expense.id) { { goToEditExpenseScreen(expense.id) } }
                                 MyListItemWithLeadIcon(
                                     modifier = Modifier
                                         .height(70.dp),
@@ -116,9 +138,7 @@ private fun ExpensesTodayScreenContent(
                                             contentDescription = null,
                                         )
                                     },
-                                    onClick = {
-
-                                    }
+                                    onClick = onEditClick
                                 )
                                 HorizontalDivider()
                             }

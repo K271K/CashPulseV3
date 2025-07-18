@@ -11,8 +11,10 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 import javax.inject.Inject
@@ -43,6 +45,22 @@ internal interface NetworkApi {
     @POST("transactions")
     suspend fun createTransaction(
         @Body transaction: CreateTransactionDomainModel
+    )
+
+    @GET("transactions/{id}")
+    suspend fun getTransactionById(
+        @Path("id") transactionId: Int
+    ): TransactionDomainModel
+
+    @PUT("transactions/{id}")
+    suspend fun updateTransaction(
+        @Path("id") transactionId: Int,
+        @Body transaction: CreateTransactionDomainModel
+    )
+
+    @DELETE("transactions/{id}")
+    suspend fun deleteTransaction(
+        @Path("id") transactionId: Int
     )
 
 }
@@ -97,5 +115,23 @@ internal class RetrofitNetwork @Inject constructor() : RemoteDataSource {
     override suspend fun createTransaction(transaction: CreateTransactionDomainModel) =
         networkApi.createTransaction(transaction = transaction)
 
+    override suspend fun getTransactionById(transactionId: Int): TransactionDomainModel =
+        networkApi.getTransactionById(transactionId = transactionId)
+
+    override suspend fun updateTransaction(
+        transaction: CreateTransactionDomainModel,
+        transactionId: Int
+    ) {
+        networkApi.updateTransaction(
+            transaction = transaction,
+            transactionId = transactionId
+        )
+    }
+
+    override suspend fun deleteTransaction(transactionId: Int) {
+        networkApi.deleteTransaction(
+            transactionId = transactionId
+        )
+    }
 
 }

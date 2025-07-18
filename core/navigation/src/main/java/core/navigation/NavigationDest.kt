@@ -25,7 +25,7 @@ sealed class Dest() {
     data object ExpensesHistory: Dest()
 
     @Serializable
-    data class TransactionEdit(val isIncome: Boolean, val transactionId: Int): Dest()
+    data class ExpensesEdit(val expenseId: Int): Dest()
 
     @Serializable
     data object ExpensesAdd: Dest()

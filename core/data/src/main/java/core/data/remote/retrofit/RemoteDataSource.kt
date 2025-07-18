@@ -21,4 +21,15 @@ interface RemoteDataSource {
 
     suspend fun createTransaction(transaction: CreateTransactionDomainModel)
 
+    suspend fun getTransactionById(transactionId: Int): TransactionDomainModel
+
+    suspend fun updateTransaction(
+        transaction: CreateTransactionDomainModel,
+        transactionId: Int
+    )
+
+    suspend fun deleteTransaction(
+        transactionId: Int
+    )
+
 }

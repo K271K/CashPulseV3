@@ -1,18 +1,19 @@
-package feature.expenses.presentation.screens.expenses_add
+package feature.expenses.presentation.screens.expenses_edit
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import core.domain.model.transaction.CreateTransactionDomainModel
-import core.domain.model.transaction.TransactionDomainModel
-import core.domain.usecase.CreateTransactionUseCase
+import core.domain.usecase.DeleteTransactionUseCase
+import core.domain.usecase.GetTransactionByIdUseCase
+import core.domain.usecase.UpdateTransactionUseCase
 import core.domain.utils.DomainConstants.ACCOUNT_ID
-import core.domain.utils.formatCurrencyFromTextToSymbol
 import core.domain.utils.formatDateFromLongToHuman
 import core.domain.utils.formatDateToISO8061
+import core.domain.utils.formatISO8601ToDate
+import core.domain.utils.formatISO8601ToTime
 import core.ui.model.CategoryPickerUiModel
 import core.ui.model.toCategoryPickerUiModel
-import feature.expenses.domain.usecase.GetAccountByIdUseCase
 import feature.expenses.domain.usecase.GetExpenseCategoriesUseCase
 import feature.expenses.presentation.screens.EditExpenseScreenState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,58 +24,63 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Provider
 
-/**
- * ViewModel и фабрика для неё находятся в одном файле.
- * Мне удобно так ориентироваться по коду.
- * Не вижу смысла разделять их по разным файлам.
- */
-class ExpensesAddScreenViewModel @Inject constructor(
-    private val createTransactionUseCase: CreateTransactionUseCase,
+class ExpensesEditScreenViewModel @Inject constructor(
     private val getExpenseCategoriesUseCase: GetExpenseCategoriesUseCase,
-    private val getAccountByIdUseCase: GetAccountByIdUseCase
+    private val getTransactionByIdUseCase: GetTransactionByIdUseCase,
+    private val updateTransactionUseCase: UpdateTransactionUseCase,
+    private val deleteTransactionUseCase: DeleteTransactionUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EditExpenseScreenState(isLoading = true))
     val uiState: StateFlow<EditExpenseScreenState> = _uiState.asStateFlow()
 
-    init {
+    fun initWithId(expenseId: Int) {
         viewModelScope.launch {
             getExpenseCategoriesUseCase()
                 .onSuccess { categories ->
+                    val mappedCategories = categories.toCategoryPickerUiModel()
                     _uiState.update {
-                        it.copy(categories = categories.toCategoryPickerUiModel())
+                        it.copy(categories = mappedCategories)
                     }
                 }
-                .onFailure { e ->
+                .onFailure { error ->
                     _uiState.update {
-                        it.copy(error = e.message, isLoading = false)
+                        it.copy(isLoading = false, error = error.message)
                         return@launch
                     }
                 }
 
-            getAccountByIdUseCase(accountId = ACCOUNT_ID)
-                .onSuccess { account ->
-                    _uiState.update {
-                        it.copy(
-                            accountName = account.name,
-                            currency = formatCurrencyFromTextToSymbol(account.currency),
-                            isLoading = false
-                        )
-                    }
-                }
-                .onFailure { error->
+            getTransactionByIdUseCase(transactionId = expenseId)
+                .onSuccess { loadedTransaction ->
+                    val selectedCategory =
+                        _uiState.value.categories.find { it.name == loadedTransaction.category.name }
+                    val formattedDate = formatISO8601ToDate(loadedTransaction.transactionDate)
+                    val formattedTime = formatISO8601ToTime(loadedTransaction.transactionDate)
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            error = error.message
+                            selectedCategory = selectedCategory,
+                            currency = loadedTransaction.account.currency,
+                            accountName = loadedTransaction.account.name,
+                            categoryName = selectedCategory!!.name,
+                            amount = loadedTransaction.amount,
+                            expenseDate = formattedDate,
+                            expenseTime = formattedTime,
+                            comment = loadedTransaction.comment,
                         )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(isLoading = false, error = error.message)
                         return@launch
                     }
                 }
         }
     }
 
-    fun validateAndCreateTransaction(
+    fun validateAndUpdateTransaction(
+        expenseId: Int,
         onValidationError: (String) -> Unit
     ) {
         viewModelScope.launch {
@@ -91,15 +97,16 @@ class ExpensesAddScreenViewModel @Inject constructor(
                 date = _uiState.value.expenseDate,
                 time = _uiState.value.expenseTime
             )
-            val createTransactionDomainModel = CreateTransactionDomainModel(
+            val domainModelTransaction = CreateTransactionDomainModel(
                 accountId = ACCOUNT_ID,
                 categoryId = _uiState.value.selectedCategory!!.id,
                 amount = _uiState.value.amount,
                 transactionDate = dateISOFormatted,
                 comment = _uiState.value.comment
             )
-            createTransactionUseCase(
-                transaction = createTransactionDomainModel
+            updateTransactionUseCase(
+                transactionId = expenseId,
+                transaction = domainModelTransaction
             )
                 .onSuccess {
                     _uiState.update {
@@ -112,7 +119,22 @@ class ExpensesAddScreenViewModel @Inject constructor(
                     }
                 }
         }
+    }
 
+    fun deleteTransaction(expenseId: Int) {
+        viewModelScope.launch {
+            deleteTransactionUseCase(transactionId = expenseId)
+                .onSuccess {
+                    _uiState.update {
+                        it.copy(success = true, isLoading = false, error = null)
+                    }
+                }
+                .onFailure { e ->
+                    _uiState.update {
+                        it.copy(error = e.message, isLoading = false)
+                    }
+                }
+        }
     }
 
     fun updateAmount(amount: String) {
@@ -146,54 +168,13 @@ class ExpensesAddScreenViewModel @Inject constructor(
             it.copy(comment = comment)
         }
     }
-
-//    fun validateAndCreateTransaction(
-//        onValidationError: (String) -> Unit
-//    ) {
-//        viewModelScope.launch {
-//            val validationErrors = _uiState.value.getValidationErrors()
-//            if (validationErrors.isNotEmpty()) {
-//                val errorMessage = validationErrors.values.first()
-//                onValidationError(errorMessage)
-//                return@launch
-//            }
-//            _uiState.update {
-//                it.copy(isLoading = true)
-//            }
-//            val dateISOFormatted = formatDateToISO8061(
-//                date = _uiState.value.expenseDate,
-//                time = _uiState.value.expenseTime
-//            )
-//            val domainModelTransaction = CreateTransactionDomainModel(
-//                accountId = ACCOUNT_ID,
-//                categoryId = _uiState.value.selectedCategory!!.id,
-//                amount = _uiState.value.amount,
-//                transactionDate = dateISOFormatted,
-//                comment = _uiState.value.comment
-//            )
-//            createTransactionUseCase(
-//                transaction = domainModelTransaction
-//            )
-//                .onSuccess {
-//                    _uiState.update {
-//                        it.copy(success = true, isLoading = false, error = null)
-//                    }
-//                }
-//                .onFailure { e ->
-//                    _uiState.update {
-//                        it.copy(error = e.message, isLoading = false)
-//                    }
-//                }
-//        }
-//    }
 }
 
-class ExpensesAddScreenViewModelFactory @Inject constructor(
-    private val expensesAddScreenViewModelProvider: Provider<ExpensesAddScreenViewModel>
+class ExpensesEditScreenViewModelFactory @Inject constructor(
+    private val expensesEditScreenViewModelProvider: Provider<ExpensesEditScreenViewModel>
 ) : ViewModelProvider.Factory {
-
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return expensesAddScreenViewModelProvider.get() as T
+        return expensesEditScreenViewModelProvider.get() as T
     }
 }

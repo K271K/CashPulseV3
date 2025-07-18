@@ -2,6 +2,7 @@ package feature.expenses.domain.usecase
 
 import core.domain.model.transaction.TransactionDomainModel
 import core.domain.repository.TransactionRepository
+import core.domain.utils.formatDateFromLongToHuman
 import javax.inject.Inject
 
 class GetTodayExpensesUseCase @Inject constructor(
@@ -9,9 +10,10 @@ class GetTodayExpensesUseCase @Inject constructor(
 ) {
     suspend operator fun invoke() : Result<List<TransactionDomainModel>> {
         return try {
+            val todayDate = formatDateFromLongToHuman(System.currentTimeMillis())
             val domainTransactionList = transactionRepository.getAccountTransactionsByPeriod(
-                startDate = "2025-07-18",
-                endDate = "2025-07-18"
+                startDate = todayDate,
+                endDate = todayDate
             )
             val filteredList = domainTransactionList.filter { !it.category.isIncome }
             Result.success(filteredList)

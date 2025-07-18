@@ -1,4 +1,4 @@
-package feature.expenses.presentation.screens.expenses_add
+package feature.expenses.presentation.screens.expenses_edit
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
@@ -6,11 +6,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -21,6 +24,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,16 +52,19 @@ import core.ui.model.CategoryPickerUiModel
 import feature.expenses.presentation.screens.EditExpenseScreenState
 
 @Composable
-fun ExpensesAddScreen(
-    expensesAddScreenViewModelFactory: ExpensesAddScreenViewModelFactory,
-    goBack: () -> Unit
+fun ExpensesEditScreen(
+    expenseId: Int,
+    expensesEditScreenViewModelFactory: ExpensesEditScreenViewModelFactory,
+    goBack: () -> Unit,
 ) {
-
-    val expensesAddScreenViewModel : ExpensesAddScreenViewModel = viewModel(
-        factory = expensesAddScreenViewModelFactory
+    val expensesEditScreenViewModel: ExpensesEditScreenViewModel = viewModel(
+        factory = expensesEditScreenViewModelFactory,
     )
+    val uiState by expensesEditScreenViewModel.uiState.collectAsStateWithLifecycle()
 
-    val uiState by expensesAddScreenViewModel.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(expenseId) {
+        expensesEditScreenViewModel.initWithId(expenseId = expenseId)
+    }
 
     BackHandler {
         goBack()
@@ -65,40 +72,43 @@ fun ExpensesAddScreen(
 
     val context = LocalContext.current
 
-    /**
-     * Тут используется remember, чтобы при каждй рекомпозиции
-     * не создавалась новая лямбда
-     */
-    ExpensesAddScreenContent(
+    ExpensesEditScreenContent(
         uiState = uiState,
         onCancelClick = goBack,
-        onAmountChange = remember { expensesAddScreenViewModel::updateAmount },
-        onDateChange = remember { expensesAddScreenViewModel::updateDate },
-        onCategoryChange = remember { expensesAddScreenViewModel::updateCategory },
-        onTimeChange = remember { expensesAddScreenViewModel::updateTime },
-        onCommentChange = remember { expensesAddScreenViewModel::updateComment },
-        onCreateTransactionClick = remember {
+        onAmountChange = remember { expensesEditScreenViewModel::updateAmount },
+        onDateChange = remember { expensesEditScreenViewModel::updateDate },
+        onCategoryChange = remember { expensesEditScreenViewModel::updateCategory },
+        onTimeChange = remember { expensesEditScreenViewModel::updateTime },
+        onCommentChange = remember { expensesEditScreenViewModel::updateComment },
+        onUpdateTransactionClick = remember {
             {
-                expensesAddScreenViewModel.validateAndCreateTransaction { errorMessage ->
-                    Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
-                }
+                expensesEditScreenViewModel.validateAndUpdateTransaction(
+                    expenseId = expenseId,
+                    onValidationError = { errorMessage ->
+                        Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                    }
+                )
             }
+        },
+        onDeleteTransactionClick = remember {
+            { expensesEditScreenViewModel.deleteTransaction(expenseId = expenseId) }
         }
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ExpensesAddScreenContent(
+private fun ExpensesEditScreenContent(
     uiState: EditExpenseScreenState,
     onCancelClick: () -> Unit,
-    afterSuccessCreated: () -> Unit = onCancelClick,
+    afterSuccessUpdated: () -> Unit = onCancelClick,
     onAmountChange: (String) -> Unit,
     onDateChange: (Long) -> Unit,
     onCategoryChange: (CategoryPickerUiModel) -> Unit,
     onTimeChange: (Int, Int) -> Unit,
     onCommentChange: (String) -> Unit,
-    onCreateTransactionClick: () -> Unit,
+    onUpdateTransactionClick: () -> Unit,
+    onDeleteTransactionClick: () -> Unit
 ) {
     var showDatePickerDialog by remember {
         mutableStateOf(false)
@@ -113,23 +123,22 @@ private fun ExpensesAddScreenContent(
     var showCategoryPickerDialog by remember {
         mutableStateOf(false)
     }
-
     if (uiState.success) {
         Box(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .fillMaxSize(),
-            contentAlignment = Alignment.Companion.Center
+            contentAlignment = Alignment.Center
         ) {
             Column(
                 verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.Companion.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = "Операция прошла успешно",
                 )
                 TextButton(
                     onClick = {
-                        afterSuccessCreated()
+                        afterSuccessUpdated()
                     },
                     colors = ButtonDefaults.textButtonColors(
                         contentColor = MaterialTheme.colorScheme.primary
@@ -141,7 +150,7 @@ private fun ExpensesAddScreenContent(
         }
     } else {
         Column(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .fillMaxSize()
         ) {
             MyTopAppBar(
@@ -152,7 +161,7 @@ private fun ExpensesAddScreenContent(
                 },
                 trailingIcon = R.drawable.check,
                 onTrailingIconClick = {
-                    onCreateTransactionClick()
+                    onUpdateTransactionClick()
                 }
             )
             when {
@@ -164,14 +173,14 @@ private fun ExpensesAddScreenContent(
                     MyErrorBox(
                         message = uiState.error,
                         onRetryClick = {
-
+                            onUpdateTransactionClick()
                         }
                     )
                 }
 
                 else -> {
                     MyListItemOnlyText(
-                        modifier = Modifier.Companion
+                        modifier = Modifier
                             .height(70.dp),
                         content = {
                             Text(
@@ -190,7 +199,7 @@ private fun ExpensesAddScreenContent(
                     )
                     HorizontalDivider()
                     MyPickerRow(
-                        modifier = Modifier.Companion
+                        modifier = Modifier
                             .height(70.dp),
                         leadingText = "Статья",
                         trailingText = uiState.categoryName,
@@ -206,7 +215,7 @@ private fun ExpensesAddScreenContent(
                     )
                     HorizontalDivider()
                     MyListItemOnlyText(
-                        modifier = Modifier.Companion
+                        modifier = Modifier
                             .height(70.dp),
                         content = {
                             Text(
@@ -215,7 +224,7 @@ private fun ExpensesAddScreenContent(
                         },
                         trailContent = {
                             Row(
-                                verticalAlignment = Alignment.Companion.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 BasicTextField(
                                     value = "${uiState.amount}",
@@ -223,25 +232,25 @@ private fun ExpensesAddScreenContent(
                                         onAmountChange(it)
                                     },
                                     textStyle = MaterialTheme.typography.bodyLarge.copy(
-                                        textAlign = TextAlign.Companion.End
+                                        textAlign = TextAlign.End
                                     ),
                                     keyboardOptions = KeyboardOptions(
-                                        keyboardType = KeyboardType.Companion.Number,
-                                        imeAction = ImeAction.Companion.Next
+                                        keyboardType = KeyboardType.Number,
+                                        imeAction = ImeAction.Next
                                     ),
                                     singleLine = true,
                                 )
                                 Text(
                                     text = uiState.currency,
                                     style = MaterialTheme.typography.bodyLarge,
-                                    modifier = Modifier.Companion.padding(start = 4.dp) // Небольшой отступ от поля
+                                    modifier = Modifier.padding(start = 4.dp) // Небольшой отступ от поля
                                 )
                             }
                         }
                     )
                     HorizontalDivider()
                     MyPickerRow(
-                        modifier = Modifier.Companion
+                        modifier = Modifier
                             .height(70.dp),
                         leadingText = "Дата",
                         trailingText = uiState.expenseDate,
@@ -251,7 +260,7 @@ private fun ExpensesAddScreenContent(
                     )
                     HorizontalDivider()
                     MyPickerRow(
-                        modifier = Modifier.Companion
+                        modifier = Modifier
                             .height(70.dp),
                         leadingText = "Время",
                         trailingText = uiState.expenseTime,
@@ -261,7 +270,7 @@ private fun ExpensesAddScreenContent(
                     )
                     HorizontalDivider()
                     MyListItemOnlyText(
-                        modifier = Modifier.Companion
+                        modifier = Modifier
                             .height(70.dp),
                         content = {
                             Text(text = "Комментарий")
@@ -273,16 +282,30 @@ private fun ExpensesAddScreenContent(
                                     onCommentChange(it)
                                 },
                                 textStyle = MaterialTheme.typography.bodyLarge.copy(
-                                    textAlign = TextAlign.Companion.End
+                                    textAlign = TextAlign.End
                                 ),
                                 keyboardOptions = KeyboardOptions(
-                                    imeAction = ImeAction.Companion.Next
+                                    imeAction = ImeAction.Next
                                 ),
                                 singleLine = true,
                             )
                         }
                     )
                     HorizontalDivider()
+                    Spacer(modifier = Modifier.height(32.dp))
+                    Button(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        onClick = {
+                            onDeleteTransactionClick()
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error
+                        )
+                    ) {
+                        Text(text = "Удалить расход")
+                    }
                     CategoryPickerDialog(
                         categoriesList = uiState.categories,
                         showDialog = showCategoryPickerDialog,

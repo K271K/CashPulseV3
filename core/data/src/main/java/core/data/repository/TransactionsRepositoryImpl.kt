@@ -30,4 +30,24 @@ class TransactionsRepositoryImpl @Inject constructor(
         )
         println(result)
     }
+
+    override suspend fun getTransactionById(transactionId: Int): TransactionDomainModel {
+        return remoteDataSource.getTransactionById(transactionId)
+    }
+
+    override suspend fun deleteTransaction(transactionId: Int) {
+        remoteDataSource.deleteTransaction(
+            transactionId = transactionId
+        )
+    }
+
+    override suspend fun updateTransaction(
+        transaction: CreateTransactionDomainModel,
+        transactionId: Int
+    ) {
+        remoteDataSource.updateTransaction(
+            transaction = transaction,
+            transactionId = transactionId
+        )
+    }
 }

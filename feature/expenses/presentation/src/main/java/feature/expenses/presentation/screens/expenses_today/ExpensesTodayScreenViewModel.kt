@@ -3,6 +3,7 @@ package feature.expenses.presentation.screens.expenses_today
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import core.domain.utils.formatCurrencyFromTextToSymbol
 import feature.expenses.domain.usecase.GetTodayExpensesUseCase
 import feature.expenses.presentation.model.toExpenseUiModelList
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Provider
+import kotlin.math.exp
 
 class ExpensesTodayScreenViewModel @Inject constructor(
     private val getTodayExpensesUseCase: GetTodayExpensesUseCase
@@ -29,6 +31,10 @@ class ExpensesTodayScreenViewModel @Inject constructor(
                             isLoading = false,
                             error = null,
                             expensesList = expensesList.toExpenseUiModelList(),
+                            currency = if (expensesList.isNotEmpty()) formatCurrencyFromTextToSymbol(
+                                expensesList.first().account.currency
+                            ) else "",
+                            totalAmount = expensesList.sumOf { expense -> expense.amount.toDouble()}.toString()
                         )
                     }
                 }
