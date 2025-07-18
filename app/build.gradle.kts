@@ -44,9 +44,8 @@ dependencies {
 
     implementation(projects.core.ui)
     implementation(projects.core.data)
-    implementation(projects.core.domain)
     implementation(projects.core.navigation)
-    api(projects.feature.expenses.presentation)
+    implementation(projects.feature.expenses.presentation)
 
     implementation(libs.dagger.dagger)
     ksp(libs.dagger.compiler)

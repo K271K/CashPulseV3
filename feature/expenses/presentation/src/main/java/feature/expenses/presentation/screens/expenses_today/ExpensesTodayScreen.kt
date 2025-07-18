@@ -26,7 +26,9 @@ import core.ui.components.MyTopAppBar
 
 @Composable
 fun ExpensesTodayScreen(
-    expensesTodayScreenViewModelFactory: ExpensesTodayScreenViewModelFactory
+    expensesTodayScreenViewModelFactory: ExpensesTodayScreenViewModelFactory,
+    goToHistoryScreen: ()-> Unit,
+    goToAddTransactionScreen: () -> Unit
 ) {
     val expensesTodayScreenViewModel: ExpensesTodayScreenViewModel = viewModel(
         factory = expensesTodayScreenViewModelFactory

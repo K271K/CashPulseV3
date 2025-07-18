@@ -36,7 +36,7 @@ android {
 
 dependencies {
 
-    implementation(projects.core.domain)
+    api(projects.core.domain)
 
     implementation(libs.dagger.dagger)
     ksp(libs.dagger.compiler)
