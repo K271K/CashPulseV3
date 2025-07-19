@@ -15,15 +15,23 @@ import core.domain.repository.CategoriesRepository
 import core.domain.repository.TransactionRepository
 import dagger.Module
 import dagger.Provides
+import feature.account.presentation.di.AccountModule
+import feature.categories.presentation.di.CategoriesModule
 import feature.expenses.presentation.di.ExpensesModule
 import feature.expenses.presentation.navigation.FeatureExpensesNavigation
+import feature.incomes.presentation.di.IncomesModule
+import feature.settings.presentation.di.SettingsModule
 import javax.inject.Provider
 import javax.inject.Singleton
 
 @Module(
     includes = [
         ExpensesModule::class,
-        CoreDataModule::class
+        IncomesModule::class,
+        AccountModule::class,
+        CategoriesModule::class,
+        SettingsModule::class,
+        CoreDataModule::class,
     ]
 )
 object AppModule {

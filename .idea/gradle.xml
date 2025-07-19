@@ -17,9 +17,21 @@
             <option value="$PROJECT_DIR$/core/navigation" />
             <option value="$PROJECT_DIR$/core/ui" />
             <option value="$PROJECT_DIR$/feature" />
+            <option value="$PROJECT_DIR$/feature/account" />
+            <option value="$PROJECT_DIR$/feature/account/domain" />
+            <option value="$PROJECT_DIR$/feature/account/presentation" />
+            <option value="$PROJECT_DIR$/feature/categories" />
+            <option value="$PROJECT_DIR$/feature/categories/domain" />
+            <option value="$PROJECT_DIR$/feature/categories/presentation" />
             <option value="$PROJECT_DIR$/feature/expenses" />
             <option value="$PROJECT_DIR$/feature/expenses/domain" />
             <option value="$PROJECT_DIR$/feature/expenses/presentation" />
+            <option value="$PROJECT_DIR$/feature/incomes" />
+            <option value="$PROJECT_DIR$/feature/incomes/domain" />
+            <option value="$PROJECT_DIR$/feature/incomes/presentation" />
+            <option value="$PROJECT_DIR$/feature/settings" />
+            <option value="$PROJECT_DIR$/feature/settings/domain" />
+            <option value="$PROJECT_DIR$/feature/settings/presentation" />
           </set>
         </option>
       </GradleProjectSettings>

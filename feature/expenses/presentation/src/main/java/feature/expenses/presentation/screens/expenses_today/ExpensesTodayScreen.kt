@@ -41,6 +41,7 @@ fun ExpensesTodayScreen(
         factory = expensesTodayScreenViewModelFactory
     )
     val uiState by expensesTodayScreenViewModel.uiState.collectAsStateWithLifecycle()
+
     ExpensesTodayScreenContent(
         uiState = uiState,
         goToHistoryScreen = goToHistoryScreen,

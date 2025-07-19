@@ -33,7 +33,12 @@ fun MainNavigation(
     ) {
         Scaffold(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxSize(),
+            bottomBar = {
+                MyBottomAppBar(
+                    navController = navController
+                )
+            }
         ) { innerPadding ->
             NavHost(
                 modifier = Modifier
@@ -42,6 +47,22 @@ fun MainNavigation(
                 startDestination = SubGraphDest.Expenses
             ) {
                 defaultNavigator.featureExpenses.registerGraph(
+                    navHostController = navController,
+                    navGraphBuilder = this
+                )
+                defaultNavigator.featureIncomes.registerGraph(
+                    navHostController = navController,
+                    navGraphBuilder = this
+                )
+                defaultNavigator.featureAccount.registerGraph(
+                    navHostController = navController,
+                    navGraphBuilder = this
+                )
+                defaultNavigator.featureCategories.registerGraph(
+                    navHostController = navController,
+                    navGraphBuilder = this
+                )
+                defaultNavigator.featureSettings.registerGraph(
                     navHostController = navController,
                     navGraphBuilder = this
                 )
