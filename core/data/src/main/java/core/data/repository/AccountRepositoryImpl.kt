@@ -11,8 +11,10 @@ import javax.inject.Inject
 class AccountRepositoryImpl @Inject constructor(
     private val remoteDataSource: RemoteDataSource,
 ) : AccountRepository {
-    override suspend fun getAllAccounts(userId: Int) {
-        TODO("Not yet implemented")
+    override suspend fun getAllAccounts(userId: Int): List<AccountDomainModel> = withContext(
+        Dispatchers.IO
+    ) {
+        return@withContext remoteDataSource.getAllAccounts(userId = userId)
     }
 
     override suspend fun createAccount() {

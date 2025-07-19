@@ -4,7 +4,7 @@ import core.domain.model.account.AccountDomainModel
 
 interface AccountRepository {
 
-    suspend fun getAllAccounts(userId: Int = 12)
+    suspend fun getAllAccounts(userId: Int = 12) : List<AccountDomainModel>
 
     suspend fun createAccount()
 

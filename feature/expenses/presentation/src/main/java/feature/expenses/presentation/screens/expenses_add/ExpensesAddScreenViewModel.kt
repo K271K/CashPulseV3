@@ -147,45 +147,6 @@ class ExpensesAddScreenViewModel @Inject constructor(
         }
     }
 
-//    fun validateAndCreateTransaction(
-//        onValidationError: (String) -> Unit
-//    ) {
-//        viewModelScope.launch {
-//            val validationErrors = _uiState.value.getValidationErrors()
-//            if (validationErrors.isNotEmpty()) {
-//                val errorMessage = validationErrors.values.first()
-//                onValidationError(errorMessage)
-//                return@launch
-//            }
-//            _uiState.update {
-//                it.copy(isLoading = true)
-//            }
-//            val dateISOFormatted = formatDateToISO8061(
-//                date = _uiState.value.expenseDate,
-//                time = _uiState.value.expenseTime
-//            )
-//            val domainModelTransaction = CreateTransactionDomainModel(
-//                accountId = ACCOUNT_ID,
-//                categoryId = _uiState.value.selectedCategory!!.id,
-//                amount = _uiState.value.amount,
-//                transactionDate = dateISOFormatted,
-//                comment = _uiState.value.comment
-//            )
-//            createTransactionUseCase(
-//                transaction = domainModelTransaction
-//            )
-//                .onSuccess {
-//                    _uiState.update {
-//                        it.copy(success = true, isLoading = false, error = null)
-//                    }
-//                }
-//                .onFailure { e ->
-//                    _uiState.update {
-//                        it.copy(error = e.message, isLoading = false)
-//                    }
-//                }
-//        }
-//    }
 }
 
 class ExpensesAddScreenViewModelFactory @Inject constructor(
