@@ -37,9 +37,6 @@ internal class FeatureExpensesNavigationImpl @Inject constructor(
                     goToHistoryScreen = {
                         navHostController.navigate(Dest.ExpensesHistory) {
                             launchSingleTop = true
-                            popUpTo(Dest.ExpensesToday) {
-                                inclusive = true
-                            }
                         }
                     },
                     goToAddExpenseScreen = {
@@ -64,19 +61,11 @@ internal class FeatureExpensesNavigationImpl @Inject constructor(
                 ExpensesHistoryScreen(
                     expensesHistoryScreenViewModelFactory = expensesHistoryScreenViewModelFactory,
                     goBack = {
-                        navHostController.navigate(Dest.ExpensesToday) {
-                            launchSingleTop = true
-                            popUpTo(Dest.ExpensesHistory) {
-                                inclusive = true
-                            }
-                        }
+                        navHostController.popBackStack()
                     },
                     goToEditExpenseScreen = { expenseId ->
                         navHostController.navigate(Dest.ExpensesEdit(expenseId = expenseId)) {
                             launchSingleTop = true
-                            popUpTo(Dest.ExpensesToday) {
-                                inclusive = true
-                            }
                         }
                     }
                 )
