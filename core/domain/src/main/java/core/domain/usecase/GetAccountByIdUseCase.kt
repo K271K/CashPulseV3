@@ -1,4 +1,4 @@
-package feature.expenses.domain.usecase
+package core.domain.usecase
 
 import core.domain.model.account.AccountDomainModel
 import core.domain.repository.AccountRepository

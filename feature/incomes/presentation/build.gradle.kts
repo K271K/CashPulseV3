@@ -41,7 +41,7 @@ dependencies {
 
     implementation(projects.core.navigation)
     implementation(projects.core.ui)
-    api(projects.feature.expenses.domain)
+    api(projects.feature.incomes.domain)
 
     implementation(libs.dagger.dagger)
     ksp(libs.dagger.compiler)
