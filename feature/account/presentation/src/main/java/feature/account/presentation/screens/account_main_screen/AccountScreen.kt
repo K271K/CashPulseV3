@@ -1,5 +1,6 @@
 package feature.account.presentation.screens.account_main_screen
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,21 +29,23 @@ import core.ui.components.MyTopAppBar
 
 @Composable
 fun AccountScreen(
-    accountScreenViewModelFactory: AccountScreenViewModelFactory
+    accountScreenViewModelFactory: AccountScreenViewModelFactory,
+    goToEditAccount: (Int) -> Unit
 ) {
-
     val accountScreenViewModel: AccountScreenViewModel = viewModel(
         factory = accountScreenViewModelFactory
     )
     val uiState by accountScreenViewModel.uiState.collectAsStateWithLifecycle()
     AccountScreenContent(
-        uiState = uiState
+        uiState = uiState,
+        goToEditAccount = goToEditAccount
     )
 }
 
 @Composable
 private fun AccountScreenContent(
-    uiState: AccountScreenState
+    uiState: AccountScreenState,
+    goToEditAccount: (Int) -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -66,7 +69,8 @@ private fun AccountScreenContent(
                         text = "Мой счёт",
                         trailingIcon = R.drawable.edit,
                         onTrailingIconClick = {
-
+                            //TODO переделать к чертям
+                            goToEditAccount(uiState.accountsList.filter { it.isSelected }.first().id)
                         }
                     )
                     if (uiState.accountsList.isEmpty()) {

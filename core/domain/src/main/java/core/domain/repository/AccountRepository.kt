@@ -10,7 +10,7 @@ interface AccountRepository {
 
     suspend fun getAccountById(accountId: Int) : AccountDomainModel
 
-    suspend fun updateAccount(accountId: Int)
+    suspend fun updateAccount(account: AccountDomainModel): AccountDomainModel
 
     suspend fun deleteAccount(accountId: Int)
 

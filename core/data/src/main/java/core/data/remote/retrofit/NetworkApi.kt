@@ -66,6 +66,12 @@ internal interface NetworkApi {
         @Path("id") transactionId: Int
     )
 
+    @PUT("accounts/{id}")
+    suspend fun updateAccount(
+        @Path("id") id: Int,
+        @Body account: AccountDomainModel
+    ): AccountDomainModel
+
 }
 
 @Singleton
@@ -108,7 +114,6 @@ internal class RetrofitNetwork @Inject constructor() : RemoteDataSource {
     override suspend fun getAllCategories(): List<CategoryDomainModel> =
         networkApi.getAllCategories()
 
-
     override suspend fun getCategoriesByType(isIncome: Boolean): List<CategoryDomainModel> =
         networkApi.getCategoriesByType(isIncome = isIncome)
 
@@ -139,5 +144,11 @@ internal class RetrofitNetwork @Inject constructor() : RemoteDataSource {
             transactionId = transactionId
         )
     }
+
+    override suspend fun updateAccount(account: AccountDomainModel) =
+        networkApi.updateAccount(
+            id = account.id,
+            account = account
+        )
 
 }

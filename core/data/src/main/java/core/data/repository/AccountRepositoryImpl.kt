@@ -27,8 +27,12 @@ class AccountRepositoryImpl @Inject constructor(
         return@withContext remoteDataSource.getAccountById(accountId = accountId)
     }
 
-    override suspend fun updateAccount(accountId: Int) {
-        TODO("Not yet implemented")
+    override suspend fun updateAccount(account: AccountDomainModel) = withContext(
+        Dispatchers.IO
+    ) {
+        remoteDataSource.updateAccount(
+            account = account
+        )
     }
 
     override suspend fun deleteAccount(accountId: Int) {

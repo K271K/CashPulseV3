@@ -35,4 +35,8 @@ interface RemoteDataSource {
         transactionId: Int
     )
 
+    suspend fun updateAccount(
+        account: AccountDomainModel
+    ): AccountDomainModel
+
 }
