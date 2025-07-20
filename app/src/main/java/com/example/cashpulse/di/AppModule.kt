@@ -6,6 +6,7 @@ import com.example.cashpulse.MainActivityViewModel
 import com.example.cashpulse.MainActivityViewModelFactory
 import com.example.cashpulse.navigation.DefaultNavigator
 import core.data.di.CoreDataModule
+import core.data.remote.connection.ConnectivityObserver
 import core.data.remote.retrofit.RemoteDataSource
 import core.data.repository.AccountRepositoryImpl
 import core.data.repository.CategoriesRepositoryImpl
@@ -54,9 +55,13 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideTransactionRepository(remoteDataSource: RemoteDataSource) : TransactionRepository {
+    fun provideTransactionRepository(
+        remoteDataSource: RemoteDataSource,
+        connectivityObserver: ConnectivityObserver
+    ) : TransactionRepository {
         return TransactionsRepositoryImpl(
-            remoteDataSource = remoteDataSource
+            remoteDataSource = remoteDataSource,
+            connectivityObserver = connectivityObserver
         )
     }
 

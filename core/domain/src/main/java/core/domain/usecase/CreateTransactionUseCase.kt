@@ -9,7 +9,6 @@ class CreateTransactionUseCase @Inject constructor (
 ) {
 
     suspend operator fun invoke(transaction: CreateTransactionDomainModel) : Result<Boolean> {
-        println(transaction.transactionDate)
         try {
             transactionRepository.createTransaction(
                 transaction = transaction

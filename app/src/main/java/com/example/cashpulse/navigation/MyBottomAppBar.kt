@@ -28,9 +28,8 @@ fun MyBottomAppBar(
                     navController.navigate(item.route) {
                         launchSingleTop = true
                         popUpTo(0) {
-                            saveState = true
+                            inclusive = true
                         }
-                        restoreState = true
                     }
                 },
                 label = { Text(text = item.label)},

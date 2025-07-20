@@ -7,14 +7,12 @@ import java.util.Date
 import java.util.Locale
 
 fun formatDateToISO8061(date: String, time: String): String{
-    println("formatDateToISO8061 input: $date $time")
     val formattedDate = LocalDateTime.parse(
         "${date}T${time.trim()}:00", // Удаляем пробелы с помощью trim()
         java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'H:mm:ss")
     ).atZone(java.time.ZoneId.systemDefault()) // Используем локальную зону пользователя
         .withZoneSameInstant(java.time.ZoneId.of("UTC")) // Переводим в UTC
         .format(java.time.format.DateTimeFormatter.ISO_INSTANT) // Форматируем с Z
-    println("formattedDate: $formattedDate")
     return formattedDate
 }
 

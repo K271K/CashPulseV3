@@ -46,6 +46,7 @@ dependencies {
     api(projects.core.domain)
 
     implementation(libs.bundles.network)
+    implementation(libs.bundles.room)
 
     implementation(libs.dagger.dagger)
     ksp(libs.dagger.compiler)

@@ -1,5 +1,6 @@
 package core.data.repository
 
+import core.data.remote.connection.ConnectivityObserver
 import core.data.remote.retrofit.RemoteDataSource
 import core.domain.model.transaction.CreateTransactionDomainModel
 import core.domain.model.transaction.TransactionDomainModel
@@ -9,26 +10,30 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class TransactionsRepositoryImpl @Inject constructor(
-    private val remoteDataSource: RemoteDataSource
+    private val remoteDataSource: RemoteDataSource,
+    private val connectivityObserver: ConnectivityObserver
 ) : TransactionRepository {
     override suspend fun getAccountTransactionsByPeriod(
         accountId: Int,
         startDate: String?,
         endDate: String?
     ): List<TransactionDomainModel> = withContext(Dispatchers.IO) {
-        val remoteData = remoteDataSource.getTransactionsByPeriod(
-            accountId = accountId,
-            startDate = startDate,
-            endDate = endDate,
-        )
-        return@withContext remoteData
+        if (connectivityObserver.isCurrentlyConnected()) {
+            val remoteData = remoteDataSource.getTransactionsByPeriod(
+                accountId = accountId,
+                startDate = startDate,
+                endDate = endDate,
+            )
+            return@withContext remoteData
+        } else {
+            throw Exception("No internet connection")
+        }
     }
 
     override suspend fun createTransaction(transaction: CreateTransactionDomainModel) {
         val result = remoteDataSource.createTransaction(
             transaction = transaction
         )
-        println(result)
     }
 
     override suspend fun getTransactionById(transactionId: Int): TransactionDomainModel {
