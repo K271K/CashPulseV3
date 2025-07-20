@@ -47,6 +47,7 @@ dependencies {
 
     implementation(libs.bundles.network)
     implementation(libs.bundles.room)
+    ksp(libs.androidx.room.compiler)
 
     implementation(libs.dagger.dagger)
     ksp(libs.dagger.compiler)
