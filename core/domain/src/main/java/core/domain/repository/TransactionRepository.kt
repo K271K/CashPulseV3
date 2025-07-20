@@ -11,7 +11,7 @@ interface TransactionRepository {
         endDate: String?
     ) : List<TransactionDomainModel>
 
-    suspend fun createTransaction(transaction: CreateTransactionDomainModel)
+    suspend fun createTransaction(transaction: CreateTransactionDomainModel): TransactionDomainModel
 
     suspend fun getTransactionById(
         transactionId: Int,

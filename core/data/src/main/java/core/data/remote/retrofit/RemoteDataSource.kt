@@ -22,7 +22,7 @@ interface RemoteDataSource {
     //Так чисто по приколу добавил UserId, в продовом проекте же по идее можно было бы аккаунты менять
     suspend fun getAllAccounts(userId: Int = 12) : List<AccountDomainModel>
 
-    suspend fun createTransaction(transaction: CreateTransactionDomainModel)
+    suspend fun createTransaction(transaction: CreateTransactionDomainModel): TransactionDomainModel
 
     suspend fun getTransactionById(transactionId: Int): TransactionDomainModel
 

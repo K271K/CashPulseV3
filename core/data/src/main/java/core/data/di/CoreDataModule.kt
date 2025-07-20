@@ -26,7 +26,9 @@ object CoreDataModule {
             context,
             AppDatabase::class.java,
             "cashpulse_db"
-        ).build()
+        )
+            .fallbackToDestructiveMigration()
+            .build()
 
     @Singleton
     @Provides

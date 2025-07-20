@@ -11,14 +11,12 @@ import androidx.room.PrimaryKey
         ForeignKey(
             entity = AccountEntity::class,
             parentColumns = ["id"],
-            childColumns = ["accountId"],
-            onDelete = ForeignKey.CASCADE
+            childColumns = ["accountId"]
         ),
         ForeignKey(
             entity = CategoryEntity::class,    // ссылаемся на таблицу categories
             parentColumns = ["id"],            // поле id в таблице categories
-            childColumns = ["categoryId"],     // поле categoryId в таблице transactions
-            onDelete = ForeignKey.CASCADE      // при удалении category удаляются все транзакции этой категории
+            childColumns = ["categoryId"]     // поле categoryId в таблице transactions
         )
     ],
     indices = [

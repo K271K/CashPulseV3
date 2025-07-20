@@ -60,8 +60,8 @@ class TransactionsRepositoryImpl @Inject constructor(
                     val newTransactionEntities = newTransactions.map { tx ->
                         TransactionEntity(
                             id = tx.id,
-                            accountId = tx.account.id,
-                            categoryId = tx.category.id,
+                            accountId = tx.account?.id ?: accountId, // fallback на параметр
+                            categoryId = tx.category?.id ?: 1, // fallback
                             amount = tx.amount,
                             comment = tx.comment,
                             transactionDate = tx.transactionDate,
@@ -128,29 +128,167 @@ class TransactionsRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun createTransaction(transaction: CreateTransactionDomainModel) {
-        val result = remoteDataSource.createTransaction(
-            transaction = transaction
-        )
-    }
+    override suspend fun createTransaction(transaction: CreateTransactionDomainModel): TransactionDomainModel =
+        withContext(Dispatchers.IO) {
+            if (connectivityObserver.isCurrentlyConnected()) {
+                try {
+                    // 1. Создаем транзакцию на сервере и получаем её
+                    val createdTransaction =
+                        remoteDataSource.createTransaction(transaction = transaction)
+                    Log.d(
+                        "TransactionsRepositoryImpl",
+                        "Транзакция создана на сервере: ${createdTransaction.id}"
+                    )
 
-    override suspend fun getTransactionById(transactionId: Int): TransactionDomainModel {
-        return remoteDataSource.getTransactionById(transactionId)
-    }
+                    // 2. Сразу сохраняем созданную транзакцию в локальную БД
+                    val transactionEntity = TransactionEntity(
+                        id = createdTransaction.id,
+                        accountId = createdTransaction.account?.id ?: transaction.accountId,
+                        categoryId = createdTransaction.category?.id ?: transaction.categoryId,
+                        amount = createdTransaction.amount,
+                        comment = createdTransaction.comment,
+                        transactionDate = createdTransaction.transactionDate,
+                        createdAt = createdTransaction.createdAt,
+                        updatedAt = createdTransaction.updatedAt
+                    )
+                    transactionDao.insert(transactionEntity)
+                    Log.d("TransactionsRepositoryImpl", "Транзакция сохранена в локальную БД")
 
-    override suspend fun deleteTransaction(transactionId: Int) {
-        remoteDataSource.deleteTransaction(
-            transactionId = transactionId
-        )
+                    return@withContext createdTransaction
+
+                } catch (e: Exception) {
+                    Log.e("TransactionsRepositoryImpl", "Ошибка создания транзакции: ${e.message}")
+                    throw e
+                }
+            } else {
+                throw Exception("Создание транзакций недоступно без интернета :(")
+            }
+        }
+
+    override suspend fun getTransactionById(transactionId: Int): TransactionDomainModel =
+        withContext(Dispatchers.IO) {
+            // При наличии интернета - обновляем данные
+            if (connectivityObserver.isCurrentlyConnected()) {
+                try {
+                    val remoteTransaction = remoteDataSource.getTransactionById(transactionId)
+                    Log.d(
+                        "TransactionsRepositoryImpl",
+                        "Транзакция получена с сервера: ${remoteTransaction.id}"
+                    )
+
+                    // Сохраняем обновленную транзакцию в БД
+                    val transactionEntity = TransactionEntity(
+                        id = remoteTransaction.id,
+                        accountId = remoteTransaction.account?.id
+                            ?: remoteTransaction.id, // fallback
+                        categoryId = remoteTransaction.category?.id ?: 1, // fallback
+                        amount = remoteTransaction.amount,
+                        comment = remoteTransaction.comment,
+                        transactionDate = remoteTransaction.transactionDate,
+                        createdAt = remoteTransaction.createdAt,
+                        updatedAt = remoteTransaction.updatedAt
+                    )
+                    transactionDao.insert(transactionEntity)
+
+                    return@withContext remoteTransaction
+                } catch (e: Exception) {
+                    Log.e("TransactionsRepositoryImpl", "Ошибка получения транзакции: ${e.message}")
+                }
+            }
+
+            // Всегда пытаемся получить из локальной БД
+            val localTransaction = getTransactionFromLocalDb(transactionId)
+            return@withContext localTransaction ?: throw Exception("Транзакция не найдена")
+        }
+
+    override suspend fun deleteTransaction(transactionId: Int): Unit = withContext(Dispatchers.IO) {
+        if (connectivityObserver.isCurrentlyConnected()) {
+            try {
+                // 1. Удаляем на сервере
+                remoteDataSource.deleteTransaction(transactionId = transactionId)
+                Log.d("TransactionsRepositoryImpl", "Транзакция удалена на сервере: $transactionId")
+
+                // 2. Сразу помечаем как удаленную в локальной БД (soft delete)
+                transactionDao.softDeleteById(transactionId)
+                Log.d("TransactionsRepositoryImpl", "Транзакция помечена как удаленная в БД")
+
+            } catch (e: Exception) {
+                Log.e("TransactionsRepositoryImpl", "Ошибка удаления транзакции: ${e.message}")
+                throw e
+            }
+        } else {
+            throw Exception("Удаление транзакций недоступно без интернета :(")
+        }
     }
 
     override suspend fun updateTransaction(
         transaction: CreateTransactionDomainModel,
         transactionId: Int
-    ) {
-        remoteDataSource.updateTransaction(
-            transaction = transaction,
-            transactionId = transactionId
+    ): Unit = withContext(Dispatchers.IO) {
+        if (connectivityObserver.isCurrentlyConnected()) {
+            try {
+                // 1. Обновляем на сервере
+                remoteDataSource.updateTransaction(
+                    transaction = transaction,
+                    transactionId = transactionId
+                )
+                Log.d(
+                    "TransactionsRepositoryImpl",
+                    "Транзакция обновлена на сервере: $transactionId"
+                )
+
+                // 2. Получаем обновленную транзакцию и сохраняем в БД
+                val updatedTransaction = remoteDataSource.getTransactionById(transactionId)
+                val transactionEntity = TransactionEntity(
+                    id = updatedTransaction.id,
+                    accountId = updatedTransaction.account?.id ?: transaction.accountId,
+                    categoryId = updatedTransaction.category?.id ?: transaction.categoryId,
+                    amount = updatedTransaction.amount,
+                    comment = updatedTransaction.comment,
+                    transactionDate = updatedTransaction.transactionDate,
+                    createdAt = updatedTransaction.createdAt,
+                    updatedAt = updatedTransaction.updatedAt
+                )
+                transactionDao.insert(transactionEntity)
+                Log.d("TransactionsRepositoryImpl", "Транзакция обновлена в локальной БД")
+
+            } catch (e: Exception) {
+                Log.e("TransactionsRepositoryImpl", "Ошибка обновления транзакции: ${e.message}")
+                throw e
+            }
+        } else {
+            throw Exception("Редактирование транзакций недоступно без интернета :(")
+        }
+    }
+
+    private suspend fun getTransactionFromLocalDb(transactionId: Int): TransactionDomainModel? {
+        val entity = transactionDao.getById(transactionId) ?: return null
+
+        val accountEntity = accountDao.getAccountById(entity.accountId)
+        val categoryEntity = categoryDao.getCategoryById(entity.categoryId)
+
+        return TransactionDomainModel(
+            id = entity.id,
+            amount = entity.amount,
+            comment = entity.comment,
+            transactionDate = entity.transactionDate,
+            createdAt = entity.createdAt,
+            updatedAt = entity.updatedAt,
+            account = AccountDomainModel(
+                id = accountEntity?.id ?: entity.accountId,
+                name = accountEntity?.name ?: "Unknown",
+                balance = accountEntity?.balance ?: "0",
+                currency = accountEntity?.currency ?: "RUB",
+                userId = accountEntity?.userId,
+                createdAt = accountEntity?.createdAt,
+                updatedAt = accountEntity?.updatedAt
+            ),
+            category = CategoryDomainModel(
+                id = categoryEntity?.id ?: entity.categoryId,
+                name = categoryEntity?.name ?: "Unknown",
+                emoji = categoryEntity?.emoji ?: "❓",
+                isIncome = categoryEntity?.isIncome ?: false
+            )
         )
     }
 }

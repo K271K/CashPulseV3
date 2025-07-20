@@ -76,17 +76,29 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideCategoriesRepository(remoteDataSource: RemoteDataSource) : CategoriesRepository {
+    fun provideCategoriesRepository(
+        remoteDataSource: RemoteDataSource,
+        connectivityObserver: ConnectivityObserver,
+        categoryDao: CategoryDao
+    ) : CategoriesRepository {
         return CategoriesRepositoryImpl(
-            remoteDataSource = remoteDataSource
+            remoteDataSource = remoteDataSource,
+            connectivityObserver = connectivityObserver,
+            categoryDao = categoryDao
         )
     }
 
     @Provides
     @Singleton
-    fun provideAccountRepository(remoteDataSource: RemoteDataSource) : AccountRepository {
+    fun provideAccountRepository(
+        remoteDataSource: RemoteDataSource,
+        connectivityObserver: ConnectivityObserver,
+        accountDao: AccountDao
+    ) : AccountRepository {
         return AccountRepositoryImpl(
-            remoteDataSource = remoteDataSource
+            remoteDataSource = remoteDataSource,
+            connectivityObserver = connectivityObserver,
+            accountDao = accountDao
         )
     }
 
