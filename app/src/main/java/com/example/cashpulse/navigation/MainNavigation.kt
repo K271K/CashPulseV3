@@ -44,7 +44,7 @@ fun MainNavigation(
                 modifier = Modifier
                     .padding(bottom = innerPadding.calculateBottomPadding()),
                 navController = navController,
-                startDestination = SubGraphDest.Expenses
+                startDestination = SubGraphDest.Settings
             ) {
                 defaultNavigator.featureExpenses.registerGraph(
                     navHostController = navController,

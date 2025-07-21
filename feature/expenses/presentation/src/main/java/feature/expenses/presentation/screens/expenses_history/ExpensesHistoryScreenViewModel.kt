@@ -62,7 +62,6 @@ class ExpensesHistoryScreenViewModel @Inject constructor(
 
     fun updateStartDate(dateInMillis: Long) {
         val formattedDate = formatDateFromLongToHuman(date = dateInMillis)
-        println(formattedDate)
         _uiState.update {
             it.copy(
                 isLoading = true,

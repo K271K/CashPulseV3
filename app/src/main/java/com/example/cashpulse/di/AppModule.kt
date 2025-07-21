@@ -6,6 +6,10 @@ import com.example.cashpulse.MainActivityViewModel
 import com.example.cashpulse.MainActivityViewModelFactory
 import com.example.cashpulse.navigation.DefaultNavigator
 import core.data.di.CoreDataModule
+import core.data.local.dao.AccountDao
+import core.data.local.dao.CategoryDao
+import core.data.local.dao.TransactionDao
+import core.data.remote.connection.ConnectivityObserver
 import core.data.remote.retrofit.RemoteDataSource
 import core.data.repository.AccountRepositoryImpl
 import core.data.repository.CategoriesRepositoryImpl
@@ -54,25 +58,47 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideTransactionRepository(remoteDataSource: RemoteDataSource) : TransactionRepository {
+    fun provideTransactionRepository(
+        remoteDataSource: RemoteDataSource,
+        connectivityObserver: ConnectivityObserver,
+        transactionDao: TransactionDao,
+        accountDao: AccountDao,
+        categoryDao: CategoryDao
+    ) : TransactionRepository {
         return TransactionsRepositoryImpl(
-            remoteDataSource = remoteDataSource
+            remoteDataSource = remoteDataSource,
+            connectivityObserver = connectivityObserver,
+            transactionDao = transactionDao,
+            accountDao = accountDao,
+            categoryDao = categoryDao
         )
     }
 
     @Provides
     @Singleton
-    fun provideCategoriesRepository(remoteDataSource: RemoteDataSource) : CategoriesRepository {
+    fun provideCategoriesRepository(
+        remoteDataSource: RemoteDataSource,
+        connectivityObserver: ConnectivityObserver,
+        categoryDao: CategoryDao
+    ) : CategoriesRepository {
         return CategoriesRepositoryImpl(
-            remoteDataSource = remoteDataSource
+            remoteDataSource = remoteDataSource,
+            connectivityObserver = connectivityObserver,
+            categoryDao = categoryDao
         )
     }
 
     @Provides
     @Singleton
-    fun provideAccountRepository(remoteDataSource: RemoteDataSource) : AccountRepository {
+    fun provideAccountRepository(
+        remoteDataSource: RemoteDataSource,
+        connectivityObserver: ConnectivityObserver,
+        accountDao: AccountDao
+    ) : AccountRepository {
         return AccountRepositoryImpl(
-            remoteDataSource = remoteDataSource
+            remoteDataSource = remoteDataSource,
+            connectivityObserver = connectivityObserver,
+            accountDao = accountDao
         )
     }
 

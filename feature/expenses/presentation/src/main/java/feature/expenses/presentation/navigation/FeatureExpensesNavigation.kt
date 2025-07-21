@@ -61,11 +61,19 @@ internal class FeatureExpensesNavigationImpl @Inject constructor(
                 ExpensesHistoryScreen(
                     expensesHistoryScreenViewModelFactory = expensesHistoryScreenViewModelFactory,
                     goBack = {
-                        navHostController.popBackStack()
+                        navHostController.navigate(Dest.ExpensesToday) {
+                            launchSingleTop = true
+                            popUpTo(Dest.ExpensesAdd) {
+                                inclusive = true
+                            }
+                        }
                     },
                     goToEditExpenseScreen = { expenseId ->
                         navHostController.navigate(Dest.ExpensesEdit(expenseId = expenseId)) {
                             launchSingleTop = true
+                            popUpTo(Dest.ExpensesHistory) {
+                                inclusive = true
+                            }
                         }
                     }
                 )

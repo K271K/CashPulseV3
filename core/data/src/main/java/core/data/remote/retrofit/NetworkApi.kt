@@ -45,7 +45,7 @@ internal interface NetworkApi {
     @POST("transactions")
     suspend fun createTransaction(
         @Body transaction: CreateTransactionDomainModel
-    )
+    ): TransactionDomainModel
 
     @GET("accounts")
     suspend fun getAllAccounts() : List<AccountDomainModel>
@@ -123,7 +123,7 @@ internal class RetrofitNetwork @Inject constructor() : RemoteDataSource {
     override suspend fun getAllAccounts(userId: Int): List<AccountDomainModel> =
         networkApi.getAllAccounts()
 
-    override suspend fun createTransaction(transaction: CreateTransactionDomainModel) =
+    override suspend fun createTransaction(transaction: CreateTransactionDomainModel): TransactionDomainModel =
         networkApi.createTransaction(transaction = transaction)
 
     override suspend fun getTransactionById(transactionId: Int): TransactionDomainModel =
