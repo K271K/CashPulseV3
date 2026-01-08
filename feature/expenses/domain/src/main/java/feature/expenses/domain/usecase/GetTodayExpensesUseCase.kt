@@ -1,5 +1,6 @@
 package feature.expenses.domain.usecase
 
+import android.util.Log
 import core.domain.model.transaction.TransactionDomainModel
 import core.domain.repository.TransactionRepository
 import core.domain.utils.formatDateFromLongToHuman
@@ -16,6 +17,7 @@ class GetTodayExpensesUseCase @Inject constructor(
                 endDate = todayDate
             )
             val filteredList = domainTransactionList.filter { !it.category.isIncome }
+            Log.d("getAccountTransactionsByPeriod", filteredList.toString())
             Result.success(filteredList)
         } catch (e: Exception) {
             Result.failure(e)
